@@ -19,12 +19,13 @@ async function apiSave() {
   });
 }
 
-async function apiUpload(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  const res = await fetch('/api/portfolio/upload', { method: 'POST', body: fd });
-  const j = await res.json();
-  return j.url;
+function apiUpload(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 // ── Data helpers ──
