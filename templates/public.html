@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}{% if exists %}{{ user.name }} – תיק עבודות{% else %}משתמש לא נמצא{% endif %}{% endblock %}
+{% block content %}
+{% if not exists %}
+<div class="login-screen">
+  <div class="login-card">
+    <h1><i class="fas fa-search"></i> משתמש לא נמצא</h1>
+    <p>לא נמצא תיק עבודות בשם "{{ username }}"</p>
+    <a href="{{ url_for('index') }}" class="btn">עמוד הבית</a>
+  </div>
+</div>
+{% else %}
+{% set d = data %}
+{% set a = d.get('about', {}) %}
+{% set t = d.get('theme', {}) %}
+
+<style>
+  {% if t.accent %} :root { --accent: {{ t.accent }}; --accent-rgb: {{ t.accent[1:3]|int(16) }}, {{ t.accent[3:5]|int(16) }}, {{ t.accent[5:7]|int(16) }}; --bg: {{ t.bg or '#0d0d0d' }}; --surface: {{ t.surface or '#141414' }}; --card-bg: {{ t.card or '#1a1a1a' }}; --text: {{ t.text or '#f0f0f0' }}; --text-muted: {{ t.textMuted or '#888' }}; --border: {{ t.border or '#2a2a2a' }}; --radius: {{ t.radius or 12 }}px; } {% endif %}
+</style>
+
+<header class="header">
+  <div class="container">
+    <a href="/" class="logo">{{ (t.siteName or a.name or user.name)[:1] }}<span>{{ (t.siteName or a.name or user.name)[1:] }}</span></a>
+    <nav class="nav">
+      <a href="#portfolio" class="nav-link">עבודות</a>
+      <a href="#about" class="nav-link">אודות</a>
+      <a href="#contact" class="nav-link">יצירת קשר</a>
+    </nav>
+    <button class="hamburger" id="hamburger" aria-label="תפריט">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>{{ t.heroTitle or a.role or user.name }}</h1>
+    <p>{{ a.heroDesc or '' }}</p>
+    <a href="#portfolio" class="btn">{{ t.ctaText or 'צפו בתיק העבודות' }}</a>
+  </div>
+</section>
+
+<section id="portfolio" class="portfolio">
+  <div class="container">
+    <h2 class="section-title">תיק עבודות</h2>
+    <p class="section-subtitle">{{ t.portfolioSub or '' }}</p>
+    <div class="filters" id="filters">
+      <button class="filter active" data-filter="all">הכל</button>
+      {% for cat in d.get('categories', []) %}
+      <button class="filter" data-filter="{{ cat.value }}">{{ cat.label }}</button>
+      {% endfor %}
+    </div>
+    <div class="grid" id="grid">
+      {% for p in d.get('projects', []) %}
+      {% set cat_label = '' %}
+      {% for c in d.get('categories', []) %}{% if c.value == p.category %}{% set cat_label = c.label %}{% endif %}{% endfor %}
+      <div class="card" data-category="{{ p.category }}">
+        <div class="card-img" style="background:{{ p.bg or '#1a1a2e' }}">
+          {% if p.image %}
+          <img src="{{ p.image }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover">
+          {% else %}
+          <i class="fas {{ p.icon or 'fa-image' }}" style="font-size:3rem;color:var(--accent)"></i>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <span class="tag">{{ cat_label or p.category }}</span>
+          <h3>{{ p.title }}</h3>
+          <p>{{ p.desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if t.showAbout or t.showAbout is undefined %}
+<section id="about" class="about">
+  <div class="container">
+    <h2 class="section-title">אודות</h2>
+    <div class="about-content">
+      <div class="about-img">
+        <div class="about-placeholder" style="overflow:hidden">
+          {% if a.photo %}
+          <img src="{{ a.photo }}" alt="{{ a.name }}" style="width:100%;height:100%;object-fit:cover">
+          {% else %}
+          <i class="fas fa-user-circle"></i>
+          {% endif %}
+        </div>
+      </div>
+      <div class="about-text">
+        <h3>{{ a.name or user.name }}</h3>
+        <p>{{ a.bio1 or '' }}</p>
+        <p>{{ a.bio2 or '' }}</p>
+        <ul class="skills">
+          {% for s in a.get('skills', []) %}
+          <li><i class="fas fa-check-circle"></i> {{ s }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if t.showStats or t.showStats is undefined %}
+<section class="stats">
+  <div class="container">
+    {% for s in a.get('stats', []) %}
+    <div class="stat"><span class="num">{{ s.num }}</span><span class="label">{{ s.label }}</span></div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section id="contact" class="contact">
+  <div class="container">
+    <h2 class="section-title">יצירת קשר</h2>
+    <p class="section-subtitle">רוצים לעבוד יחד? השאירו פרטים ואחזור אליכם</p>
+    <div class="contact-wrapper">
+      <form class="contact-form" id="contactForm">
+        <input type="text" placeholder="שם מלא" required>
+        <input type="email" placeholder="אימייל" required>
+        <input type="text" placeholder="נושא">
+        <textarea rows="5" placeholder="הודעה..." required></textarea>
+        <button type="submit" class="btn">שליחה <i class="fas fa-paper-plane"></i></button>
+      </form>
+      <div class="contact-info">
+        <div><i class="fas fa-envelope"></i> {{ a.email or '' }}</div>
+        <div><i class="fas fa-phone"></i> {{ a.phone or '' }}</div>
+        <div><i class="fas fa-map-marker-alt"></i> {{ a.location or '' }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 {{ a.name or user.name }}. באדיבות <a href="{{ url_for('index') }}" style="color:var(--accent);text-decoration:none">תיק עבודות</a></p>
+  </div>
+</footer>
+
+<div class="modal" id="modal">
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+    <button class="modal-nav modal-prev" id="modalPrev"><i class="fas fa-chevron-right"></i></button>
+    <button class="modal-nav modal-next" id="modalNext"><i class="fas fa-chevron-left"></i></button>
+    <div class="modal-counter" id="modalCounter"></div>
+    <div class="modal-img"></div>
+    <div class="modal-body">
+      <span class="tag" id="modalTag"></span>
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Hamburger
+document.getElementById('hamburger').addEventListener('click', function() {
+  this.classList.toggle('active');
+  document.querySelector('.nav').classList.toggle('open');
+});
+document.querySelectorAll('.nav-link').forEach(function(l) {
+  l.addEventListener('click', function() {
+    document.getElementById('hamburger').classList.remove('active');
+    document.querySelector('.nav').classList.remove('open');
+  });
+});
+
+// Filter
+var filters = document.querySelectorAll('.filter');
+var cards = document.querySelectorAll('.card');
+filters.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    filters.forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var f = btn.dataset.filter;
+    cards.forEach(function(c) {
+      if (f === 'all' || c.dataset.category === f) { c.style.display = 'block'; } else { c.style.display = 'none'; }
+    });
+  });
+});
+
+// Modal
+var modal = document.getElementById('modal');
+var ov = document.getElementById('modalOverlay');
+var cl = document.getElementById('modalClose');
+var prv = document.getElementById('modalPrev');
+var nxt = document.getElementById('modalNext');
+var cnt = document.getElementById('modalCounter');
+var mTag = document.getElementById('modalTag');
+var mTitle = document.getElementById('modalTitle');
+var mDesc = document.getElementById('modalDesc');
+var mImg = document.querySelector('.modal-img');
+var ci = 0;
+
+function getVC() { return [...document.querySelectorAll('.card')].filter(function(c) { return c.style.display !== 'none'; }); }
+
+function openModal(i) {
+  var v = getVC(); if (!v.length) return;
+  ci = Math.max(0, Math.min(i, v.length - 1));
+  var c = v[ci];
+  mTag.textContent = c.querySelector('.tag').textContent;
+  mTitle.textContent = c.querySelector('h3').textContent;
+  mDesc.textContent = c.querySelector('p').textContent;
+  var imgDiv = c.querySelector('.card-img');
+  mImg.innerHTML = imgDiv.innerHTML;
+  mImg.style.background = imgDiv.style.background;
+  cnt.textContent = (ci + 1) + ' / ' + v.length;
+  prv.style.display = nxt.style.display = v.length > 1 ? 'flex' : 'none';
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+cards.forEach(function(c, idx) {
+  c.addEventListener('click', function() {
+    var v = getVC();
+    openModal(v.indexOf(c));
+  });
+});
+function closeModal() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+prv.addEventListener('click', function() { var v = getVC(); if (v.length <= 1) return; ci = (ci - 1 + v.length) % v.length; openModal(ci); });
+nxt.addEventListener('click', function() { var v = getVC(); if (v.length <= 1) return; ci = (ci + 1) % v.length; openModal(ci); });
+cl.addEventListener('click', closeModal);
+ov.addEventListener('click', closeModal);
+document.addEventListener('keydown', function(e) {
+  if (!modal.classList.contains('open')) return;
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'ArrowRight') { var v = getVC(); if (v.length > 1) { ci = (ci - 1 + v.length) % v.length; openModal(ci); } }
+  if (e.key === 'ArrowLeft') { var v = getVC(); if (v.length > 1) { ci = (ci + 1) % v.length; openModal(ci); } }
+});
+
+// Contact form
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var btn = this.querySelector('.btn');
+  btn.innerHTML = 'נשלח! <i class="fas fa-check"></i>';
+  btn.style.background = '#2ecc71';
+  setTimeout(function() { btn.innerHTML = 'שליחה <i class="fas fa-paper-plane"></i>'; btn.style.background = ''; }, 2500);
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}תיק עבודות – בנה תיק עבודות משלך בחינם{% endblock %}
+{% block content %}
+<header class="header">
+  <div class="container">
+    <a href="/" class="logo">תיק<span>עבודות</span></a>
+    <nav class="nav">
+      <a href="#features" class="nav-link">איך זה עובד</a>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') }}" class="nav-link">לוח בקרה</a>
+      <a href="{{ url_for('logout') }}" class="nav-link">התנתקות</a>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="nav-link">התחברות</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<section class="hero" style="min-height:90vh">
+  <div class="container">
+    <h1>בנה תיק עבודות<br>מקצועי תוך דקות</h1>
+    <p>פלטפורמה חינמית לגרפיקאים, מעצבים ואמנים – בנה אתר תיק עבודות מותאם אישית, שתף בקישור אחד, ותמיד תוכל לעדכן</p>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('dashboard') }}" class="btn">ללוח הבקרה שלי</a>
+    {% else %}
+    <a href="{{ url_for('login') }}" class="btn">התחל עכשיו בחינם</a>
+    {% endif %}
+  </div>
+</section>
+
+<section id="features" class="about" style="text-align:center">
+  <div class="container">
+    <h2 class="section-title">איך זה עובד</h2>
+    <p class="section-subtitle">שלושה צעדים פשוטים</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px">
+      <div style="background:var(--card-bg);padding:32px;border-radius:var(--radius);border:1px solid var(--border)">
+        <i class="fas fa-google" style="font-size:2.5rem;color:var(--accent);margin-bottom:16px"></i>
+        <h3 style="font-size:1.2rem;margin-bottom:8px">1. התחבר</h3>
+        <p style="color:var(--text-muted)">התחבר עם חשבון Google שלך – אין צורך בהרשמה</p>
+      </div>
+      <div style="background:var(--card-bg);padding:32px;border-radius:var(--radius);border:1px solid var(--border)">
+        <i class="fas fa-paint-brush" style="font-size:2.5rem;color:var(--accent);margin-bottom:16px"></i>
+        <h3 style="font-size:1.2rem;margin-bottom:8px">2. עצב</h3>
+        <p style="color:var(--text-muted)">הוסף פרויקטים, קבע צבעים, כתוב אודות – הכל בלוח בקרה נוח</p>
+      </div>
+      <div style="background:var(--card-bg);padding:32px;border-radius:var(--radius);border:1px solid var(--border)">
+        <i class="fas fa-share-alt" style="font-size:2.5rem;color:var(--accent);margin-bottom:16px"></i>
+        <h3 style="font-size:1.2rem;margin-bottom:8px">3. שתף</h3>
+        <p style="color:var(--text-muted)">קבל קישור ייחודי לתיק העבודות שלך ושתף עם לקוחות</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 תיק עבודות. פלטפורמה חינמית ליוצרים.</p>
+  </div>
+</footer>
+{% endblock %}
