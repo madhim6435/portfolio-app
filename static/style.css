@@ -1,244 +1,647 @@
-{% extends "base.html" %}
-{% block title %}{% if exists %}{{ user.name }} – תיק עבודות{% else %}משתמש לא נמצא{% endif %}{% endblock %}
-{% block content %}
-{% if not exists %}
-<div class="login-screen">
-  <div class="login-card">
-    <h1><i class="fas fa-search"></i> משתמש לא נמצא</h1>
-    <p>לא נמצא תיק עבודות בשם "{{ username }}"</p>
-    <a href="{{ url_for('index') }}" class="btn">עמוד הבית</a>
-  </div>
-</div>
-{% else %}
-{% set d = data %}
-{% set a = d.get('about', {}) %}
-{% set t = d.get('theme', {}) %}
-
-<style>
-  {% if t.accent %} :root { --accent: {{ t.accent }}; --accent-rgb: {{ t.accent[1:3]|int(16) }}, {{ t.accent[3:5]|int(16) }}, {{ t.accent[5:7]|int(16) }}; --bg: {{ t.bg or '#0d0d0d' }}; --surface: {{ t.surface or '#141414' }}; --card-bg: {{ t.card or '#1a1a1a' }}; --text: {{ t.text or '#f0f0f0' }}; --text-muted: {{ t.textMuted or '#888' }}; --border: {{ t.border or '#2a2a2a' }}; --radius: {{ t.radius or 12 }}px; } {% endif %}
-</style>
-
-<header class="header">
-  <div class="container">
-    <span class="logo">{{ (t.siteName or a.name or user.name)[:1] }}<span>{{ (t.siteName or a.name or user.name)[1:] }}</span></span>
-    <nav class="nav">
-      <a href="#portfolio" class="nav-link">עבודות</a>
-      <a href="#about" class="nav-link">אודות</a>
-      <a href="#contact" class="nav-link">יצירת קשר</a>
-    </nav>
-    <button class="hamburger" id="hamburger" aria-label="תפריט">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
-
-<section class="hero">
-  <div class="container">
-    <h1>{{ t.heroTitle or a.role or user.name }}</h1>
-    <p>{{ a.heroDesc or '' }}</p>
-    <a href="#portfolio" class="btn">{{ t.ctaText or 'צפו בתיק העבודות' }}</a>
-  </div>
-</section>
-
-<section id="portfolio" class="portfolio">
-  <div class="container">
-    <h2 class="section-title">תיק עבודות</h2>
-    <p class="section-subtitle">{{ t.portfolioSub or '' }}</p>
-    <div class="filters" id="filters">
-      <button class="filter active" data-filter="all">הכל</button>
-      {% for cat in d.get('categories', []) %}
-      <button class="filter" data-filter="{{ cat.value }}">{{ cat.label }}</button>
-      {% endfor %}
-    </div>
-    <div class="grid" id="grid">
-      {% for p in d.get('projects', []) %}
-      {% set cat_label = '' %}
-      {% for c in d.get('categories', []) %}{% if c.value == p.category %}{% set cat_label = c.label %}{% endif %}{% endfor %}
-      <div class="card" data-category="{{ p.category }}">
-        <div class="card-img" style="background:{{ p.bg or '#1a1a2e' }}">
-          {% if p.image %}
-          <img src="{{ p.image }}" alt="{{ p.title }}" style="width:100%;height:100%;object-fit:cover">
-          {% else %}
-          <i class="fas {{ p.icon or 'fa-image' }}" style="font-size:3rem;color:var(--accent)"></i>
-          {% endif %}
-        </div>
-        <div class="card-body">
-          <span class="tag">{{ cat_label or p.category }}</span>
-          <h3>{{ p.title }}</h3>
-          <p>{{ p.desc }}</p>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-{% if t.showAbout or t.showAbout is undefined %}
-<section id="about" class="about">
-  <div class="container">
-    <h2 class="section-title">אודות</h2>
-    <div class="about-content">
-      <div class="about-img">
-        <div class="about-placeholder" style="overflow:hidden">
-          {% if a.photo %}
-          <img src="{{ a.photo }}" alt="{{ a.name }}" style="width:100%;height:100%;object-fit:cover">
-          {% else %}
-          <i class="fas fa-user-circle"></i>
-          {% endif %}
-        </div>
-      </div>
-      <div class="about-text">
-        <h3>{{ a.name or user.name }}</h3>
-        <p>{{ a.bio1 or '' }}</p>
-        <p>{{ a.bio2 or '' }}</p>
-        <ul class="skills">
-          {% for s in a.get('skills', []) %}
-          <li><i class="fas fa-check-circle"></i> {{ s }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-{% endif %}
-
-{% if t.showStats or t.showStats is undefined %}
-<section class="stats">
-  <div class="container">
-    {% for s in a.get('stats', []) %}
-    <div class="stat"><span class="num">{{ s.num }}</span><span class="label">{{ s.label }}</span></div>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-<section id="contact" class="contact">
-  <div class="container">
-    <h2 class="section-title">יצירת קשר</h2>
-    <p class="section-subtitle">רוצים לעבוד יחד? השאירו פרטים ואחזור אליכם</p>
-    <div class="contact-wrapper">
-      <form class="contact-form" id="contactForm">
-        <input type="text" placeholder="שם מלא" required>
-        <input type="email" placeholder="אימייל" required>
-        <input type="text" placeholder="נושא">
-        <textarea rows="5" placeholder="הודעה..." required></textarea>
-        <button type="submit" class="btn">שליחה <i class="fas fa-paper-plane"></i></button>
-      </form>
-      <div class="contact-info">
-        <div><i class="fas fa-envelope"></i> {{ a.email or '' }}</div>
-        <div><i class="fas fa-phone"></i> {{ a.phone or '' }}</div>
-        <div><i class="fas fa-map-marker-alt"></i> {{ a.location or '' }}</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer class="footer">
-  <div class="container">
-    <p>&copy; 2026 {{ a.name or user.name }}. באדיבות <a href="{{ url_for('index') }}" style="color:var(--accent);text-decoration:none">תיק עבודות</a></p>
-  </div>
-</footer>
-
-<div class="modal" id="modal">
-  <div class="modal-overlay" id="modalOverlay"></div>
-  <div class="modal-content">
-    <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
-    <button class="modal-nav modal-prev" id="modalPrev"><i class="fas fa-chevron-right"></i></button>
-    <button class="modal-nav modal-next" id="modalNext"><i class="fas fa-chevron-left"></i></button>
-    <div class="modal-counter" id="modalCounter"></div>
-    <div class="modal-img"></div>
-    <div class="modal-body">
-      <span class="tag" id="modalTag"></span>
-      <h2 id="modalTitle"></h2>
-      <p id="modalDesc"></p>
-    </div>
-  </div>
-</div>
-
-<script>
-// Hamburger
-document.getElementById('hamburger').addEventListener('click', function() {
-  this.classList.toggle('active');
-  document.querySelector('.nav').classList.toggle('open');
-});
-document.querySelectorAll('.nav-link').forEach(function(l) {
-  l.addEventListener('click', function() {
-    document.getElementById('hamburger').classList.remove('active');
-    document.querySelector('.nav').classList.remove('open');
-  });
-});
-
-// Filter
-var filters = document.querySelectorAll('.filter');
-var cards = document.querySelectorAll('.card');
-filters.forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    filters.forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    var f = btn.dataset.filter;
-    cards.forEach(function(c) {
-      if (f === 'all' || c.dataset.category === f) { c.style.display = 'block'; } else { c.style.display = 'none'; }
-    });
-  });
-});
-
-// Modal
-var modal = document.getElementById('modal');
-var ov = document.getElementById('modalOverlay');
-var cl = document.getElementById('modalClose');
-var prv = document.getElementById('modalPrev');
-var nxt = document.getElementById('modalNext');
-var cnt = document.getElementById('modalCounter');
-var mTag = document.getElementById('modalTag');
-var mTitle = document.getElementById('modalTitle');
-var mDesc = document.getElementById('modalDesc');
-var mImg = document.querySelector('.modal-img');
-var ci = 0;
-
-function getVC() { return [...document.querySelectorAll('.card')].filter(function(c) { return c.style.display !== 'none'; }); }
-
-function openModal(i) {
-  var v = getVC(); if (!v.length) return;
-  ci = Math.max(0, Math.min(i, v.length - 1));
-  var c = v[ci];
-  mTag.textContent = c.querySelector('.tag').textContent;
-  mTitle.textContent = c.querySelector('h3').textContent;
-  mDesc.textContent = c.querySelector('p').textContent;
-  var imgDiv = c.querySelector('.card-img');
-  mImg.innerHTML = imgDiv.innerHTML;
-  mImg.style.background = imgDiv.style.background;
-  cnt.textContent = (ci + 1) + ' / ' + v.length;
-  prv.style.display = nxt.style.display = v.length > 1 ? 'flex' : 'none';
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
+/* ── Reset & Base ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-cards.forEach(function(c, idx) {
-  c.addEventListener('click', function() {
-    var v = getVC();
-    openModal(v.indexOf(c));
-  });
-});
-function closeModal() { modal.classList.remove('open'); document.body.style.overflow = ''; }
-prv.addEventListener('click', function() { var v = getVC(); if (v.length <= 1) return; ci = (ci - 1 + v.length) % v.length; openModal(ci); });
-nxt.addEventListener('click', function() { var v = getVC(); if (v.length <= 1) return; ci = (ci + 1) % v.length; openModal(ci); });
-cl.addEventListener('click', closeModal);
-ov.addEventListener('click', closeModal);
-document.addEventListener('keydown', function(e) {
-  if (!modal.classList.contains('open')) return;
-  if (e.key === 'Escape') closeModal();
-  if (e.key === 'ArrowRight') { var v = getVC(); if (v.length > 1) { ci = (ci - 1 + v.length) % v.length; openModal(ci); } }
-  if (e.key === 'ArrowLeft') { var v = getVC(); if (v.length > 1) { ci = (ci + 1) % v.length; openModal(ci); } }
-});
+:root {
+  --bg: #0d0d0d;
+  --surface: #141414;
+  --card-bg: #1a1a1a;
+  --accent: #e94560;
+  --accent-rgb: 233, 69, 96;
+  --accent-hover: #ff6b81;
+  --accent-hover: #ff6b81;
+  --text: #f0f0f0;
+  --text-muted: #888;
+  --border: #2a2a2a;
+  --radius: 12px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-// Contact form
-document.getElementById('contactForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  var btn = this.querySelector('.btn');
-  btn.innerHTML = 'נשלח! <i class="fas fa-check"></i>';
-  btn.style.background = '#2ecc71';
-  setTimeout(function() { btn.innerHTML = 'שליחה <i class="fas fa-paper-plane"></i>'; btn.style.background = ''; }, 2500);
-});
-</script>
-{% endif %}
-{% endblock %}
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Assistant', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  direction: rtl;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Typography ── */
+.section-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 48px;
+}
+
+/* ── Header ── */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(13, 13, 13, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+.nav {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-link {
+  font-size: 1rem;
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width var(--transition);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: var(--transition);
+}
+
+/* ── Hero ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  padding-top: 64px;
+  background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, transparent 60%);
+}
+
+.hero h1 {
+  font-size: 3.6rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  max-width: 540px;
+  margin: 0 auto 36px;
+}
+
+/* ── Login Screen ── */
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px 36px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+
+.login-card h1 {
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+
+.login-card h1 i {
+  color: var(--accent);
+}
+
+.login-card p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  padding: 14px 36px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+/* ── Filters ── */
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.filter {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.filter:hover,
+.filter.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ── Grid ── */
+.portfolio {
+  padding: 100px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+  border: 1px solid var(--border);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(var(--accent-rgb), 0.15);
+}
+
+.card-img {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.tag {
+  display: inline-block;
+  background: rgba(var(--accent-rgb), 0.15);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 50px;
+  margin-bottom: 8px;
+}
+
+.card-body h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card-body p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── About ── */
+.about {
+  padding: 100px 0;
+  background: var(--surface);
+}
+
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.about-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8rem;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.about-text h3 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.about-text p {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+}
+
+.skills {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.skills li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.skills i {
+  color: var(--accent);
+}
+
+/* ── Stats ── */
+.stats {
+  padding: 80px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats .container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  text-align: center;
+}
+
+.stat .num {
+  display: block;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.stat .label {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+/* ── Contact ── */
+.contact {
+  padding: 100px 0;
+}
+
+.contact-wrapper {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 48px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-form input,
+.contact-form textarea {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color var(--transition);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.contact-form textarea {
+  resize: vertical;
+}
+
+.contact-form .btn {
+  align-self: flex-start;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: 1.05rem;
+  padding-top: 8px;
+}
+
+.contact-info i {
+  color: var(--accent);
+  width: 28px;
+}
+
+/* ── Footer ── */
+.footer {
+  padding: 32px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Modal ── */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  max-width: 480px;
+  width: 90%;
+  overflow: hidden;
+  animation: modalIn 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+@keyframes modalIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 2;
+  transition: background var(--transition);
+}
+
+.modal-close:hover {
+  background: var(--accent);
+}
+
+.modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 2;
+  transition: background var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-nav:hover {
+  background: var(--accent);
+}
+
+.modal-prev {
+  right: 12px;
+}
+
+.modal-next {
+  left: 12px;
+}
+
+.modal-counter {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  z-index: 2;
+  direction: ltr;
+}
+
+.modal-img {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  overflow: hidden;
+}
+
+.modal-body {
+  padding: 28px;
+}
+
+.modal-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 8px 0;
+}
+
+.modal-body p {
+  color: var(--text-muted);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.4rem; }
+  .hero p { font-size: 1rem; }
+  .section-title { font-size: 1.8rem; }
+
+  .nav {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    flex-direction: column;
+    padding: 16px 24px;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav.open {
+    display: flex;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  .about-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .about-placeholder {
+    max-width: 240px;
+    margin: 0 auto;
+    font-size: 5rem;
+  }
+
+  .stats .container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .contact-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-form .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.8rem; }
+  .grid { grid-template-columns: 1fr; }
+  .filters { gap: 6px; }
+  .filter { padding: 8px 16px; font-size: 0.85rem; }
+  .skills { grid-template-columns: 1fr; }
+}
