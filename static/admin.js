@@ -22,10 +22,23 @@ async function apiSave() {
 
 function apiUpload(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const MAX = 1200;
+    const img = new Image();
+    img.onload = function() {
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
   });
 }
 
