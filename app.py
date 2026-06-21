@@ -161,7 +161,7 @@ def public_portfolio(username):
 def get_portfolio():
     portfolio = current_user.portfolio
     if not portfolio:
-        return jsonify({'error': 'no portfolio'}), 404
+        return jsonify({})
     return jsonify(json.loads(portfolio.data))
 
 @app.route('/api/portfolio', methods=['POST'])
