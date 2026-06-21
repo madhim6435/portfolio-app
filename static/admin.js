@@ -150,7 +150,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
   const existing = data.projects.find(p => p.id === id);
   const project = {
     id, title, category, desc,
-    image: imgSrc && imgSrc.startsWith('http') ? imgSrc : (existing ? existing.image : ''),
+    image: imgSrc && (imgSrc.startsWith('data:') || imgSrc.startsWith('http')) ? imgSrc : (existing ? existing.image : ''),
     icon: existing ? existing.icon : 'fa-image',
     bg: existing ? existing.bg : randomBg()
   };
