@@ -12,11 +12,12 @@ async function apiLoad() {
 }
 
 async function apiSave() {
-  await fetch('/api/portfolio', {
+  const res = await fetch('/api/portfolio', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
+  if (!res.ok) throw new Error('Save failed: ' + res.status);
 }
 
 function apiUpload(file) {
